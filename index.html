@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>我的免費資料庫網站</title>
+    <!-- 引入 Supabase 的前端 JavaScript 套件 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        input, button { padding: 8px; font-size: 16px; }
+        ul { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>我的 Todo 資料庫清單</h1>
+    <input type="text" id="todoInput" placeholder="輸入代辦事項...">
+    <button onclick="addTodo()">新增資料</button>
+    <ul id="todoList"></ul>
+
+    <script>
+        // 初始化 Supabase 連線
+        const SUPABASE_URL = 'https://tutmepajueyaqlqzdjzl.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Xr_m5eclif8icTU4ho5X9w_SxB3JtTE';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 讀取資料
+        async function fetchTodos() {
+            const { data, error } = await supabase.from('todos').select('*');
+            if (error) {
+                console.error('讀取失敗', error);
+                return;
+            }
+            const list = document.getElementById('todoList');
+            list.innerHTML = '';
+            data.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item.title;
+                list.appendChild(li);
+            });
+        }
+
+        // 新增資料
+        async function addTodo() {
+            const input = document.getElementById('todoInput');
+            const title = input.value;
+            if (!title) return;
+
+            const { error } = await supabase.from('todos').insert([{ title }]);
+            if (error) {
+                alert('新增失敗：' + error.message);
+                return;
+            }
+            input.value = '';
+            fetchTodos(); // 重新整理清單
+        }
+
+        // 網頁載入時抓取資料
+        fetchTodos();
+    </script>
+</body>
+</html>
